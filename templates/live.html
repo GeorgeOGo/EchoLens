@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ 'المراقبة المباشرة - EchoLens' if lang == 'ar' else 'Live Surveillance - EchoLens' }}
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative h-96 bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='images/hero-bg.jpg') }}');">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 opacity-70"></div>
+    <div class="relative container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+        <h1 class="text-5xl font-bold mb-4 animate-typewriter">
+            {{ 'المراقبة المباشرة' if lang == 'ar' else 'Live Surveillance' }}
+        </h1>
+        <p class="text-xl mb-6 animate-fade-in">
+            {{ 'مراقبة في الوقت الحقيقي مع تحليل الذكاء الاصطناعي الفوري' if lang == 'ar' else 'Real-time monitoring with instant AI analysis' }}
+        </p>
+    </div>
+</section>
+
+<!-- Live Surveillance Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6">
+                    {% for category, message in messages %}
+                        <div class="bg-{{ 'red' if category == 'error' else 'green' }}-100 border border-{{ 'red' if category == 'error' else 'green' }}-400 text-{{ 'red' if category == 'error' else 'green' }}-700 px-4 py-3 rounded-lg shadow-md" role="alert">
+                            <span class="block sm:inline">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+            <!-- Camera Preview and Controls -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="w-full md:w-2/3">
+                        <div id="cameraPreview" class="relative bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+                            <div id="cameraPlaceholder" class="text-white text-center p-4">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-gray-500">
+                                    {{ 'الكاميرا غير نشطة' if lang == 'ar' else 'Camera is inactive' }}
+                                </p>
+                            </div>
+                            <video id="liveFeed" class="hidden w-full h-full object-cover" autoplay playsinline></video>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-1/3 space-y-4">
+                        <div class="flex flex-col space-y-4">
+                            <!-- Camera Controls -->
+                            <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 transition-all duration-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>{{ 'بدء المراقبة' if lang == 'ar' else 'Start Monitoring' }}</span>
+                            </button>
+                            
+                            <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 transition-all duration-300 hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                                </svg>
+                                <span>{{ 'إيقاف المراقبة' if lang == 'ar' else 'Stop Monitoring' }}</span>
+                            </button>
+                            
+                            <button id="analyzeBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 transition-all duration-300 hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                                <span>{{ 'تحليل الفيديو' if lang == 'ar' else 'Analyze Video' }}</span>
+                            </button>
+
+                            <!-- RTSP Input -->
+                            <div class="mt-4">
+                                <label for="rtspUrl" class="block text-sm font-medium text-gray-700">
+                                    {{ 'أدخل عنوان RTSP' if lang == 'ar' else 'Enter RTSP URL' }}
+                                </label>
+                                <input type="text" id="rtspUrl" placeholder="rtsp://example.com/stream" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <button id="analyzeRtspBtn" class="mt-2 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 transition-all duration-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    <span>{{ 'تحليل تدفق RTSP' if lang == 'ar' else 'Analyze RTSP Stream' }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-800 mb-2">
+                                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ 'تعليمات' if lang == 'ar' else 'Instructions' }}
+                            </h4>
+                            <ol class="text-sm text-gray-600 list-decimal list-inside space-y-1">
+                                <li>{{ 'اضغط على "بدء المراقبة" لفتح الكاميرا' if lang == 'ar' else 'Click "Start Monitoring" to open camera' }}</li>
+                                <li>{{ 'اضغط على "إيقاف المراقبة" عند الانتهاء' if lang == 'ar' else 'Click "Stop Monitoring" when finished' }}</li>
+                                <li>{{ 'اضغط على "تحليل الفيديو" لرؤية النتائج' if lang == 'ar' else 'Click "Analyze Video" to see results' }}</li>
+                                <li>{{ 'أو أدخل عنوان RTSP واضغط على "تحليل تدفق RTSP"' if lang == 'ar' else 'Or enter RTSP URL and click "Analyze RTSP Stream"' }}</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analysis Results -->
+            <div id="resultsSection" class="hidden">
+                <div class="p-6 bg-gray-50 border-b border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        {{ 'نتائج التحليل' if lang == 'ar' else 'Analysis Results' }}
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Prediction Card -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex items-center mb-4">
+                                <div class="p-2 bg-blue-100 rounded-full mr-3">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800">{{ 'التنبؤ بالحدث' if lang == 'ar' else 'Event Prediction' }}</h4>
+                            </div>
+                            <p id="predictionResult" class="text-2xl font-bold text-gray-800 capitalize">{{ 'لم يتم التحليل بعد' if lang == 'ar' else 'Not analyzed yet' }}</p>
+                            <div class="mt-2">
+                                <span class="text-sm text-gray-500">{{ 'الثقة:' if lang == 'ar' else 'Confidence:' }}</span>
+                                <span id="confidenceValue" class="ml-2 font-medium">0%</span>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                                    <div id="confidenceBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Summary Card -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex items-center mb-4">
+                                <div class="p-2 bg-blue-100 rounded-full mr-3">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800">{{ 'ملخص الحدث' if lang == 'ar' else 'Event Summary' }}</h4>
+                            </div>
+                            <p id="summaryResult" class="text-gray-600 italic">{{ 'سيظهر هنا ملخص الأحداث بعد التحليل' if lang == 'ar' else 'Event summary will appear here after analysis' }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detected Events Timeline -->
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ 'خط زمني للأحداث' if lang == 'ar' else 'Events Timeline' }}
+                    </h4>
+                    
+                    <div class="relative">
+                        <!-- Timeline -->
+                        <div class="border-l-2 border-blue-200 absolute h-full left-4 top-0"></div>
+                        
+                        <!-- Events List -->
+                        <ul id="eventsList" class="space-y-4">
+                            <li class="relative pl-8">
+                                <div class="absolute w-3 h-3 bg-blue-600 rounded-full left-0 top-1.5"></div>
+                                <div class="bg-gray-100 p-4 rounded-lg">
+                                    <p class="text-gray-600 italic">{{ 'سيظهر هنا تسلسل الأحداث المكتشفة' if lang == 'ar' else 'Detected events will appear here' }}</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Download Buttons -->
+                    <div class="mt-6 text-center space-y-4">
+                        <a id="downloadBtn" href="{{ url_for('main.download_raw_live') }}"
+                           class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300">
+                            {{ 'تنزيل فيديو الإطارات الرئيسية' if lang == 'ar' else 'Download Raw Keyframes Video' }}
+                        </a>
+                        <a id="downloadReportBtn" href="{{ url_for('main.download_report', source='live') }}"
+                           class="block bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transform hover:scale-105 transition-all duration-300">
+                            {{ 'تنزيل التقرير كـ PDF' if lang == 'ar' else 'Download Report as PDF' }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 text-blue-600 animate-spin">
+                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2" id="loadingTitle">
+                    {{ 'جاري التحليل' if lang == 'ar' else 'Analyzing' }}
+                </h3>
+                <p class="text-gray-600 mb-4" id="loadingMessage">
+                    {{ 'جاري معالجة الفيديو وتحليله، يرجى الانتظار...' if lang == 'ar' else 'Processing and analyzing video, please wait...' }}
+                </p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="analysisProgress" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Only showing the updated script section for brevity -->
+<script>
+    // إدارة حالة الكاميرا
+    const cameraManager = {
+        recording: false,
+        mediaStream: null,
+        mediaRecorder: null,
+        recordedChunks: []
+    };
+
+    const lang = '{{ lang }}'; // Get the language from the template
+
+    // بدء التسجيل
+    document.getElementById('startBtn').addEventListener('click', async function() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: {
+                    width: 1280,
+                    height: 720,
+                    facingMode: 'environment'
+                },
+                audio: false
+            });
+            
+            cameraManager.mediaStream = stream;
+            cameraManager.recordedChunks = [];
+            
+            const videoElement = document.getElementById('liveFeed');
+            videoElement.srcObject = stream;
+            videoElement.classList.remove('hidden');
+            document.getElementById('cameraPlaceholder').classList.add('hidden');
+            
+            // إعداد MediaRecorder
+            const options = { mimeType: 'video/webm;codecs=vp9' };
+            cameraManager.mediaRecorder = new MediaRecorder(stream, options);
+            
+            cameraManager.mediaRecorder.ondataavailable = function(e) {
+                console.log('Data available:', e.data.size);
+                if (e.data.size > 0) {
+                    cameraManager.recordedChunks.push(e.data);
+                    console.log('Chunks recorded:', cameraManager.recordedChunks.length);
+                } else {
+                    console.warn('No data recorded in chunk');
+                }
+            };
+            
+            cameraManager.mediaRecorder.onstop = function() {
+                console.log('Recording stopped, total chunks:', cameraManager.recordedChunks.length);
+            };
+            
+            cameraManager.mediaRecorder.start(100);
+            cameraManager.recording = true;
+            
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            document.getElementById('analyzeBtn').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            
+        } catch (error) {
+            console.error('Error starting camera:', error);
+            alert(`${lang === 'ar' ? 'خطأ في تشغيل الكاميرا: ' : 'Camera error: '}${error.message}`);
+        }
+    });
+
+    // إيقاف التسجيل
+    document.getElementById('stopBtn').addEventListener('click', function() {
+        if (cameraManager.mediaRecorder && cameraManager.mediaRecorder.state !== 'inactive') {
+            cameraManager.mediaRecorder.stop();
+        }
+        
+        if (cameraManager.mediaStream) {
+            cameraManager.mediaStream.getTracks().forEach(track => track.stop());
+        }
+        
+        cameraManager.recording = false;
+        
+        console.log('Chunks before analysis:', cameraManager.recordedChunks.length);
+        
+        document.getElementById('liveFeed').classList.add('hidden');
+        document.getElementById('cameraPlaceholder').classList.remove('hidden');
+        document.getElementById('stopBtn').classList.add('hidden');
+        document.getElementById('analyzeBtn').classList.remove('hidden');
+    });
+
+    // تحليل الفيديو من الكاميرا
+    document.getElementById('analyzeBtn').addEventListener('click', async function() {
+        console.log('Analyze button clicked, chunks:', cameraManager.recordedChunks.length);
+        if (cameraManager.recordedChunks.length === 0) {
+            alert(`${lang === 'ar' ? 'لا يوجد فيديو مسجل للتحليل' : 'No video recorded for analysis'}`);
+            return;
+        }
+        
+        const loadingModal = document.getElementById('loadingModal');
+        const analysisProgress = document.getElementById('analysisProgress');
+        loadingModal.classList.remove('hidden');
+        
+        simulateAnalysisProgress(analysisProgress);
+        
+        try {
+            const videoBlob = new Blob(cameraManager.recordedChunks, { type: 'video/webm' });
+            console.log('Video Blob size:', videoBlob.size);
+            
+            const formData = new FormData();
+            formData.append('video', videoBlob, 'recording.webm');
+            
+            const response = await fetch(`/live?lang=${lang}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || (lang === 'ar' ? 'فشل التحليل' : 'Analysis failed'));
+            }
+            
+            const results = await response.json();
+            console.log('Analysis results:', results);
+            displayResults(results);
+            
+        } catch (error) {
+            console.error('Analysis error:', error);
+            alert(`${lang === 'ar' ? 'خطأ في التحليل: ' : 'Analysis error: '}${error.message}`);
+        } finally {
+            loadingModal.classList.add('hidden');
+            analysisProgress.style.width = '0%';
+        }
+    });
+
+    // تحليل RTSP Stream
+    document.getElementById('analyzeRtspBtn').addEventListener('click', async function() {
+        const rtspUrl = document.getElementById('rtspUrl').value;
+        if (!rtspUrl) {
+            alert(`${lang === 'ar' ? 'يرجى إدخال عنوان RTSP' : 'Please enter an RTSP URL'}`);
+            return;
+        }
+
+        const loadingModal = document.getElementById('loadingModal');
+        const analysisProgress = document.getElementById('analysisProgress');
+        loadingModal.classList.remove('hidden');
+
+        // محاكاة شريط التقدم
+        simulateAnalysisProgress(analysisProgress);
+
+        try {
+            const formData = new FormData();
+            formData.append('rtsp_url', rtspUrl);
+
+            const response = await fetch(`/live?lang=${lang}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || (lang === 'ar' ? 'فشل التحليل' : 'Analysis failed'));
+            }
+
+            const results = await response.json();
+            displayResults(results);
+
+        } catch (error) {
+            console.error('RTSP Analysis error:', error);
+            alert(`${lang === 'ar' ? 'خطأ في تحليل RTSP: ' : 'RTSP Analysis error: '}${error.message}`);
+        } finally {
+            loadingModal.classList.add('hidden');
+            analysisProgress.style.width = '0%';
+        }
+    });
+
+    // عرض النتائج
+    function displayResults(data) {
+        const resultsSection = document.getElementById('resultsSection');
+        resultsSection.classList.remove('hidden');
+        
+        // تحديث التنبؤ
+        document.getElementById('predictionResult').textContent = data.predicted_label || (lang === 'ar' ? 'غير معروف' : 'Unknown');
+        // Use data.confidence instead of undefined confidence variable
+        const confidence = data.confidence || 0; // Fallback to 0 if confidence is not provided
+        document.getElementById('confidenceValue').textContent = `${confidence.toFixed(2)}%`;
+        document.getElementById('confidenceBar').style.width = `${confidence}%`;
+                
+        // تحديث الملخص
+        document.getElementById('summaryResult').textContent = data.summary || (lang === 'ar' ? 'لا تتوفر معلومات كافية' : 'No sufficient information');
+        
+        // تحديث الأحداث
+        const eventsList = document.getElementById('eventsList');
+        eventsList.innerHTML = '';
+        
+        if (data.events && data.events.length > 0) {
+            data.events.forEach((event, index) => {
+                const eventItem = document.createElement('li');
+                eventItem.className = 'relative pl-8';
+                
+                const timeText = `${lang === 'ar' ? 'البداية' : 'Start'}: ${(event.start_time || 0).toFixed(2)}s (Frame ${event.start_frame || 0}) - ` +
+                                 `${lang === 'ar' ? 'النهاية' : 'End'}: ${(event.end_time || 0).toFixed(2)}s (Frame ${event.end_frame || 0})`;
+                
+                eventItem.innerHTML = `
+                    <div class="absolute w-3 h-3 bg-blue-600 rounded-full left-0 top-1.5"></div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <p class="font-medium text-gray-800">${lang === 'ar' ? `حدث ${index + 1}` : `Event ${index + 1}`}</p>
+                        <p class="text-sm text-gray-600">${timeText}</p>
+                    </div>
+                `;
+                eventsList.appendChild(eventItem);
+            });
+        } else {
+            eventsList.innerHTML = `
+                <li class="relative pl-8">
+                    <div class="absolute w-3 h-3 bg-blue-600 rounded-full left-0 top-1.5"></div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <p class="text-gray-600 italic">${lang === 'ar' ? 'لم يتم اكتشاف أحداث مهمة' : 'No significant events detected'}</p>
+                    </div>
+                </li>
+            `;
+        }
+    }
+
+    // محاكاة شريط التقدم أثناء التحليل
+    function simulateAnalysisProgress(progressBar) {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+            }
+            progressBar.style.width = `${progress}%`;
+        }, 300);
+    }
+
+    // إعادة تعيين واجهة المستخدم عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('startBtn').classList.remove('hidden');
+        document.getElementById('stopBtn').classList.add('hidden');
+        document.getElementById('analyzeBtn').classList.add('hidden');
+        document.getElementById('resultsSection').classList.add('hidden');
+        document.getElementById('liveFeed').classList.add('hidden');
+        document.getElementById('cameraPlaceholder').classList.remove('hidden');
+    });
+</script>
+{% endblock %}

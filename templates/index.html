@@ -1,28 +1,86 @@
 {% extends 'base.html' %}
-{% block title %}EchoLens - Empowering Video Intelligence{% endblock %}
+{% block title %}
+    {{ 'EchoLens - نظام مراقبة ذكي' if lang == 'ar' else 'EchoLens - Empowering Video Intelligence' }}
+{% endblock %}
 {% block content %}
-    <section class="bg-blue-900 text-white py-20 text-center">
-        <div class="container mx-auto">
-            <h1 class="text-4xl font-bold mb-4">Welcome to EchoLens</h1>
-            <p class="text-xl mb-6">Empowering Insights Through Video Intelligence</p>
-            <a href="/analysis" class="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600">Try Video Analysis</a>
+    <!-- Hero Section -->
+    <section class="relative h-96 bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='images/hero-bg.jpg') }}');">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 opacity-70"></div>
+        <div class="relative container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+            <h1 class="text-5xl font-bold mb-4 animate-typewriter">
+                {{ 'مرحبًا بك في EchoLens' if lang == 'ar' else 'Welcome to EchoLens' }}
+            </h1>
+            <p class="text-xl mb-6 animate-fade-in">
+                {{ 'تمكين الرؤى من خلال ذكاء الفيديو' if lang == 'ar' else 'Empowering Insights Through Video Intelligence' }}
+            </p>
+            <a href="{{ url_for('main.analysis', lang=lang) }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transform hover:scale-105 transition-all duration-300">
+                {{ 'جرب تحليل الفيديو' if lang == 'ar' else 'Try Video Analysis' }}
+            </a>
         </div>
     </section>
-    <section class="py-12">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-8">Why EchoLens?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4">Advanced AI</h3>
-                    <p>Our cutting-edge AI analyzes videos to detect key events with high accuracy.</p>
+
+    <!-- Why EchoLens Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center text-gray-800 mb-12 animate-on-scroll">
+                {{ 'لماذا EchoLens؟' if lang == 'ar' else 'Why EchoLens?' }}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Item 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 animate-on-scroll">
+                    <div class="w-12 h-12 mx-auto mb-4 text-blue-600">
+                        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center text-gray-800 mb-4">
+                        {{ 'ذكاء اصطناعي متقدم' if lang == 'ar' else 'Advanced AI' }}
+                    </h3>
+                    <p class="text-gray-600 text-center">
+                        {{ 'تقنية الذكاء الاصطناعي المتطورة لدينا تحلل الفيديوهات لاكتشاف الأحداث الرئيسية بدقة عالية.' if lang == 'ar' else 'Our cutting-edge AI analyzes videos to detect key events with high accuracy.' }}
+                    </p>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4">User-Friendly</h3>
-                    <p>Upload videos and get insights in seconds with our intuitive interface.</p>
+                <!-- Item 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 animate-on-scroll">
+                    <div class="w-12 h-12 mx-auto mb-4 text-blue-600">
+                        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center text-gray-800 mb-4">
+                        {{ 'سهل الاستخدام' if lang == 'ar' else 'User-Friendly' }}
+                    </h3>
+                    <p class="text-gray-600 text-center">
+                        {{ 'ارفع الفيديوهات واحصل على الرؤى في ثوانٍ من خلال واجهتنا البديهية.' if lang == 'ar' else 'Upload videos and get insights in seconds with our intuitive interface.' }}
+                    </p>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-semibold mb-4">Scalable Solutions</h3>
-                    <p>From startups to enterprises, EchoLens scales to meet your needs.</p>
+                <!-- Item 3 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 animate-on-scroll">
+                    <div class="w-12 h-12 mx-auto mb-4 text-blue-600">
+                        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center text-gray-800 mb-4">
+                        {{ 'حلول قابلة للتطوير' if lang == 'ar' else 'Scalable Solutions' }}
+                    </h3>
+                    <p class="text-gray-600 text-center">
+                        {{ 'من الشركات الناشئة إلى المؤسسات الكبرى، يتكيف EchoLens لتلبية احتياجاتك.' if lang == 'ar' else 'From startups to enterprises, EchoLens scales to meet your needs.' }}
+                    </p>
+                </div>
+                <!-- Item 4: Fast and Accurate Insights -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 animate-on-scroll">
+                    <div class="w-12 h-12 mx-auto mb-4 text-blue-600">
+                        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center text-gray-800 mb-4">
+                        {{ 'رؤى سريعة ودقيقة' if lang == 'ar' else 'Fast and Accurate Insights' }}
+                    </h3>
+                    <p class="text-gray-600 text-center">
+                        {{ 'احصل على تحليلات سريعة ودقيقة لاتخاذ قرارات مستنيرة بسرعة.' if lang == 'ar' else 'Get fast and accurate insights to make informed decisions quickly.' }}
+                    </p>
                 </div>
             </div>
         </div>

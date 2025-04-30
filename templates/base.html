@@ -1,93 +1,295 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'ar' if lang == 'ar' else 'en' }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EchoLens{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-        }
+        /* Custom Fonts */
         body {
-            display: flex;
-            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
+            color: #1e293b;
+            transition: all 0.3s ease;
         }
-        main {
-            flex: 1 0 auto;
-            min-height: calc(100vh - 128px);
-            animation: fadeIn 0.5s ease-in-out;
+        html[lang="ar"] {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            direction: rtl;
+        }
+        html[lang="ar"] ul {
+            padding-right: 1.5rem;
+            padding-left: 0;
+        }
+        html[lang="ar"] li {
+            text-align: right;
+        }
+
+        /* Light Mode Styles */
+        .bg-white {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .bg-gray-50 {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        .bg-gray-100 {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 100%);
+        }
+        .bg-gray-200 {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        }
+        .bg-gradient-to-b {
+            background: linear-gradient(to bottom, #f1f5f9, #d1d5db);
+        }
+        .text-gray-800 {
+            color: #1e293b;
+        }
+        .text-gray-700 {
+            color: #475569;
+        }
+        .text-gray-600 {
+            color: #64748b;
+        }
+        .text-gray-500 {
+            color: #94a3b8;
+        }
+        a.text-gray-800:hover {
+            color: #3b82f6;
+        }
+        .bg-red-100 {
+            background: #fef2f2;
+        }
+        .text-red-700 {
+            color: #b91c1c;
+        }
+        .border-red-500 {
+            border-color: #ef4444;
+        }
+        nav {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
         }
         footer {
-            flex-shrink: 0;
+            background: #ffffff;
+            color: #64748b;
         }
+
+        /* Dark Mode Styles */
+        .dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+        }
+        .dark-mode .bg-white {
+            background: #2d3748;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .dark-mode .bg-gray-50 {
+            background: linear-gradient(135deg, #2d3748 0%, #1e293b 100%);
+        }
+        .dark-mode .bg-gray-100 {
+            background: linear-gradient(135deg, #2d3748 0%, #1e293b 100%);
+        }
+        .dark-mode .bg-gray-200 {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+        .dark-mode .bg-gradient-to-b {
+            background: linear-gradient(to bottom, #2d3748, #1e293b);
+        }
+        .dark-mode .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #2d3748, #1e293b);
+        }
+        .dark-mode .text-gray-800 {
+            color: #e2e8f0;
+        }
+        .dark-mode .text-gray-700 {
+            color: #cbd5e0;
+        }
+        .dark-mode .text-gray-600 {
+            color: #94a3b8;
+        }
+        .dark-mode .text-gray-500 {
+            color: #a0aec0;
+        }
+        .dark-mode a.text-gray-800 {
+            color: #93c5fd;
+        }
+        .dark-mode a.text-gray-800:hover {
+            color: #60a5fa;
+        }
+        .dark-mode .bg-red-100 {
+            background: #4b1c1c;
+        }
+        .dark-mode .text-red-700 {
+            color: #f87171;
+        }
+        .dark-mode .border-red-500 {
+            border-color: #ef4444;
+        }
+        .dark-mode nav {
+            background: linear-gradient(135deg, #2d3748 0%, #1e293b 100%);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+        }
+        .dark-mode footer {
+            background: #2d3748;
+            color: #94a3b8;
+        }
+
+        /* Navigation Link Spacing Fix */
+        .nav-links a {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        html[lang="ar"] .nav-links {
+            direction: rtl;
+        }
+
+        /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.5s ease-out forwards;
         }
-        .animate-slide-up {
-            animation: slideUp 0.7s ease-in-out;
+
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        .animate-typewriter {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typewriter 2s steps(40, end) forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX({{ '-20px' if lang == 'ar' else '20px' }}); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateX({{ '-20px' if lang == 'ar' else '20px' }});
+        }
+        .animate-on-scroll.visible {
+            animation: slideIn 0.6s ease-out forwards;
+        }
+        /* Add staggered animation delay for multiple elements */
+        .animate-on-scroll:nth-child(1) { animation-delay: 0.1s; }
+        .animate-on-scroll:nth-child(2) { animation-delay: 0.2s; }
+        .animate-on-scroll:nth-child(3) { animation-delay: 0.3s; }
+        .animate-on-scroll:nth-child(4) { animation-delay: 0.4s; }
+        .animate-on-scroll:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Accessibility: Focus Styles */
+        button:focus, a:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Navigation -->
-    <nav class="bg-blue-900 text-white p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold flex items-center">
-                <img src="/static/img/logo.png" alt="EchoLens Logo" class="h-8 mr-2">
-                EchoLens
-            </a>
-            <div class="space-x-4">
-                <a href="/" class="hover:text-orange-500">Home</a>
-                <a href="/analysis" class="hover:text-orange-500">Analysis</a>
-                <a href="/features" class="hover:text-orange-500">Features</a>
-                <a href="/about" class="hover:text-orange-500">About</a>
-                <a href="/contact" class="hover:text-orange-500">Contact</a>
+<body class="font-sans transition-colors duration-300 min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <nav class="shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="EchoLens Logo" class="h-10 {{ 'mr-3' if lang == 'en' else 'ml-3' }}">
+                <a href="{{ url_for('main.index', lang=lang) }}" class="text-2xl font-bold text-gray-800">EchoLens</a>
+            </div>
+            <!-- Navigation Links -->
+            <div class="nav-links inline-flex items-center space-x-6 {{ 'space-x-reverse' if lang == 'ar' else '' }} gap-6">
+                <a href="{{ url_for('main.index', lang=lang) }}" class="text-gray-800 hover:text-blue-500 font-medium">
+                    {{ 'الرئيسية' if lang == 'ar' else 'Home' }}
+                </a>
+                <a href="{{ url_for('main.about', lang=lang) }}" class="text-gray-800 hover:text-blue-500 font-medium">
+                    {{ 'حول' if lang == 'ar' else 'About' }}
+                </a>
+                <a href="{{ url_for('main.features', lang=lang) }}" class="text-gray-800 hover:text-blue-500 font-medium">
+                    {{ 'الميزات' if lang == 'ar' else 'Features' }}
+                </a>
+                <a href="{{ url_for('main.contact', lang=lang) }}" class="text-gray-800 hover:text-blue-500 font-medium">
+                    {{ 'اتصل بنا' if lang == 'ar' else 'Contact' }}
+                </a>
+                <a href="{{ url_for('main.analysis', lang=lang) }}" class="text-gray-800 hover:text-blue-500 font-medium">
+                    {{ 'تحليل الفيديو' if lang == 'ar' else 'Video Analysis' }}
+                </a>
+                <a href="{{ url_for('main.live', lang=lang) }}" class="text-gray-800 hover:text-blue-500 font-medium">
+                    {{ 'مراقبة مباشرة' if lang == 'ar' else 'Live Surveillance' }}
+                </a>
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none" aria-label="{{ 'تبديل الوضع الليلي' if lang == 'ar' else 'Toggle dark mode' }}">
+                    <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+                <!-- Language Toggle -->
+                <button id="lang-toggle" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none" aria-label="{{ 'تبديل اللغة' if lang == 'ar' else 'Toggle language' }}">
+                    <span id="lang-text">{{ 'EN' if lang == 'ar' else 'AR' }}</span>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="container mx-auto py-8">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="bg-{% if category == 'success' %}green{% else %}red{% endif %}-100 border border-{% if category == 'success' %}green{% else %}red{% endif %}-400 text-{% if category == 'success' %}green{% else %}red{% endif %}-700 px-4 py-3 rounded mb-4">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <main class="flex-grow">
         {% block content %}
-            <!-- Default content if block is not overridden -->
-            <div class="text-center">
-                <h1 class="text-3xl font-bold">Welcome to EchoLens</h1>
-                <p class="mt-4">This is a placeholder page. Override this block in child templates.</p>
-            </div>
         {% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="bg-blue-900 text-white p-4">
-        <div class="container mx-auto text-center">
-            <p>© 2025 EchoLens. All rights reserved.</p>
-            <p class="mt-2">
-                <a href="/contact" class="hover:text-orange-500">Contact Us</a> |
-                <a href="/about" class="hover:text-orange-500">About</a> |
-                <a href="/features" class="hover:text-orange-500">Features</a>
+    <footer class="py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600">
+                © 2025 EchoLens. {{ 'جميع الحقوق محفوظة' if lang == 'ar' else 'All rights reserved.' }}
             </p>
         </div>
     </footer>
+
+    <!-- JavaScript for Theme, Language Toggle, and Scroll Animations -->
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"></path>';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            themeIcon.innerHTML = isDark
+                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"></path>'
+                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Language Toggle Functionality
+        const langToggle = document.getElementById('lang-toggle');
+        const currentLang = '{{ lang }}' || 'en';
+        langToggle.addEventListener('click', () => {
+            const newLang = currentLang === 'ar' ? 'en' : 'ar';
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('lang', newLang);
+            window.location.href = currentUrl.toString();
+        });
+
+        // Scroll Animation for Elements
+        const animateOnScrollElements = document.querySelectorAll('.animate-on-scroll');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        animateOnScrollElements.forEach(element => observer.observe(element));
+    </script>
 </body>
 </html>

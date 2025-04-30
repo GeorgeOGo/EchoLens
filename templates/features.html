@@ -1,32 +1,45 @@
 {% extends 'base.html' %}
-{% block title %}Features - EchoLens{% endblock %}
+{% block title %}
+    {{ 'الميزات - EchoLens' if lang == 'ar' else 'Features - EchoLens' }}
+{% endblock %}
 {% block content %}
     <!-- Hero Section -->
     <section class="relative h-96 bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='images/hero-bg.jpg') }}');">
         <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 opacity-70"></div>
         <div class="relative container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-            <h1 class="text-5xl font-bold mb-4 animate-typewriter">Explore EchoLens Features</h1>
-            <p class="text-xl mb-6 animate-fade-in">Discover the powerful tools that make EchoLens the ultimate surveillance solution.</p>
-            <a href="{{ url_for('main.analysis') }}" class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-blue-100 transition-all duration-300 animate-fade-in">Get Started</a>
+            <h1 class="text-5xl font-bold mb-4 animate-typewriter">
+                {{ 'استكشف ميزات EchoLens' if lang == 'ar' else 'Explore EchoLens Features' }}
+            </h1>
+            <p class="text-xl mb-6 animate-fade-in">
+                {{ 'اكتشف الأدوات القوية التي تجعل EchoLens الحل الأمثل للمراقبة.' if lang == 'ar' else 'Discover the powerful tools that make EchoLens the ultimate surveillance solution.' }}
+            </p>
+            <a href="{{ url_for('main.analysis', lang=lang) }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transform hover:scale-105 transition-all duration-300">
+                {{ 'ابدأ الآن' if lang == 'ar' else 'Get Started' }}
+            </a>
         </div>
     </section>
 
     <!-- Features Section -->
     <section class="py-16 bg-gray-50">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-semibold text-center text-gray-800 mb-12 animate-on-scroll">Our Features</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <h2 class="text-4xl font-bold text-center text-gray-800 mb-12 animate-on-scroll">
+                {{ 'ميزاتنا' if lang == 'ar' else 'Our Features' }}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Feature 1 -->
                 <div class="bg-white rounded-xl shadow-lg p-6 text-center transition-all duration-300 hover:shadow-xl hover:scale-105 animate-on-scroll">
                     <div class="w-16 h-16 mx-auto mb-4 text-blue-600">
                         <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4-4z"/>
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Real-Time Analysis</h3>
-                    <p class="text-gray-600">Monitor and analyze surveillance footage in real-time with advanced AI algorithms.</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                        {{ 'التحليل في الوقت الحقيقي' if lang == 'ar' else 'Real-Time Analysis' }}
+                    </h3>
+                    <p class="text-gray-600">
+                        {{ 'راقب و حلل لقطات المراقبة في الوقت الحقيقي باستخدام خوارزميات الذكاء الاصطناعي المتقدمة.' if lang == 'ar' else 'Monitor and analyze surveillance footage in real-time with advanced AI algorithms.' }}
+                    </p>
                 </div>
-
                 <!-- Feature 2 -->
                 <div class="bg-white rounded-xl shadow-lg p-6 text-center transition-all duration-300 hover:shadow-xl hover:scale-105 animate-on-scroll">
                     <div class="w-16 h-16 mx-auto mb-4 text-blue-600">
@@ -34,10 +47,13 @@
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">AI-Powered Detection</h3>
-                    <p class="text-gray-600">Detect anomalies and events with high accuracy using state-of-the-art AI models.</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                        {{ 'الكشف بمساعدة الذكاء الاصطناعي' if lang == 'ar' else 'AI-Powered Detection' }}
+                    </h3>
+                    <p class="text-gray-600">
+                        {{ 'اكتشف الشذوذات والأحداث بدقة عالية باستخدام نماذج الذكاء الاصطناعي الحديثة.' if lang == 'ar' else 'Detect anomalies and events with high accuracy using state-of-the-art AI models.' }}
+                    </p>
                 </div>
-
                 <!-- Feature 3 -->
                 <div class="bg-white rounded-xl shadow-lg p-6 text-center transition-all duration-300 hover:shadow-xl hover:scale-105 animate-on-scroll">
                     <div class="w-16 h-16 mx-auto mb-4 text-blue-600">
@@ -45,8 +61,26 @@
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Event Reporting</h3>
-                    <p class="text-gray-600">Generate detailed reports of detected events for actionable insights.</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                        {{ 'تقارير الأحداث' if lang == 'ar' else 'Event Reporting' }}
+                    </h3>
+                    <p class="text-gray-600">
+                        {{ 'أنشئ تقارير مفصلة عن الأحداث المكتشفة للحصول على رؤى قابلة للتنفيذ.' if lang == 'ar' else 'Generate detailed reports of detected events for actionable insights.' }}
+                    </p>
+                </div>
+                <!-- Feature 4: Reliable RTSP Stream Analysis -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center transition-all duration-300 hover:shadow-xl hover:scale-105 animate-on-scroll">
+                    <div class="w-16 h-16 mx-auto mb-4 text-blue-600">
+                        <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                        {{ 'تحليل تدفق RTSP موثوق' if lang == 'ar' else 'Reliable RTSP Stream Analysis' }}
+                    </h3>
+                    <p class="text-gray-600">
+                        {{ 'تم تحسين تحليل تدفقات RTSP لضمان معالجة أكثر موثوقية واكتشاف دقيق للأحداث.' if lang == 'ar' else 'Enhanced RTSP stream analysis for more reliable processing and accurate event detection.' }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -55,9 +89,15 @@
     <!-- CTA Section -->
     <section class="py-16 bg-blue-600 text-white text-center">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-semibold mb-4 animate-on-scroll">Ready to Enhance Your Security?</h2>
-            <p class="text-lg mb-6 animate-on-scroll">Join thousands of users who trust EchoLens for their surveillance needs.</p>
-            <a href="{{ url_for('main.analysis') }}" class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-blue-100 transition-all duration-300 animate-on-scroll">Try EchoLens Now</a>
+            <h2 class="text-4xl font-bold mb-4 animate-on-scroll">
+                {{ 'هل أنت جاهز لتحسين أمنك؟' if lang == 'ar' else 'Ready to Enhance Your Security?' }}
+            </h2>
+            <p class="text-lg mb-6 animate-on-scroll">
+                {{ 'انضم إلى آلاف المستخدمين الذين يثقون بـ EchoLens لتلبية احتياجات المراقبة الخاصة بهم.' if lang == 'ar' else 'Join thousands of users who trust EchoLens for their surveillance needs.' }}
+            </p>
+            <a href="{{ url_for('main.analysis', lang=lang) }}" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-100 transform hover:scale-105 transition-all duration-300 animate-on-scroll">
+                {{ 'جرب EchoLens الآن' if lang == 'ar' else 'Try EchoLens Now' }}
+            </a>
         </div>
     </section>
 {% endblock %}
