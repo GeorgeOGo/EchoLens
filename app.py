@@ -828,5 +828,9 @@ def cleanup(exception=None):
     cv2.destroyAllWindows()
     logger.info("cleanup: Application context torn down, resources released.")
 
+#if __name__ == "__main__":
+   # socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+    port = int(os.getenv("PORT", 5000))  # Use PORT from environment, default to 5000 for local dev
+    socketio.run(app, debug=False, host="0.0.0.0", port=port)  # debug=False for production
