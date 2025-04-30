@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
 # تحديد مجلد العمل
 WORKDIR /app
 
+# إنشاء المسارات بتاعة Ultralytics
+RUN mkdir -p /app/ultralytics_settings /app/runs /app/weights
+
 # نسخ ملف المتطلبات
 COPY requirements.txt .
 
@@ -20,7 +23,6 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # نسخ باقي كود التطبيق
 COPY . .
-
 
 # تشغيل التطبيق باستخدام Gunicorn
 CMD gunicorn -b 0.0.0.0:$PORT app:app

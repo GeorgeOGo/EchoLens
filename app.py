@@ -18,7 +18,23 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 import datetime
+import os
+from ultralytics import settings
 
+# تحديد مسار ثابت داخل المشروع لحفظ إعدادات Ultralytics
+settings_dir = "/app/ultralytics_settings"
+os.makedirs(settings_dir, exist_ok=True)
+
+# ضبط مسار الإعدادات بتاعة Ultralytics
+settings.update({
+    "settings_dir": settings_dir,  # مسار ملف الإعدادات
+    "runs_dir": "/app/runs",       # مسار حفظ النتايج (زي الصور أو الفيديوهات المعالجة)
+    "weights_dir": "/app/weights", # مسار تحميل وتخزين الموديلات
+})
+
+# التأكد إن المسارات موجودة
+os.makedirs("/app/runs", exist_ok=True)
+os.makedirs("/app/weights", exist_ok=True)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
