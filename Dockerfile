@@ -21,4 +21,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . .
 
 # Set the command to run the app with Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:$PORT", "app:app"]
+CMD gunicorn -b 0.0.0.0:$PORT app:app
