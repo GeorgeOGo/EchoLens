@@ -1,2 +1,12 @@
+
 [phases.setup]
-nixPkgs = ["ffmpeg"]
+nixPkgs = ["python312"]  # Install Python 3.12
+
+[phases.build]
+cmd = "python -m venv --copies /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt"
+
+[phases.setup]
+nixPkgs = ["python312", "ffmpeg"]
+
+[phases.build]
+cmd = "python -m venv --copies /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt"
