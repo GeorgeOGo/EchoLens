@@ -21,5 +21,6 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # نسخ باقي كود التطبيق
 COPY . .
 
+
 # تشغيل التطبيق باستخدام Gunicorn
 CMD gunicorn -b 0.0.0.0:$PORT app:app
