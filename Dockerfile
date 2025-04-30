@@ -1,24 +1,25 @@
-# Use the official Python 3.12 slim image as the base
+# استخدام صورة Python 3.12 خفيفة كأساس
 FROM python:3.12-slim
 
-# Install system dependencies for OpenCV
+# تثبيت حزم النظام اللي OpenCV محتاجها
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
+# تحديد مجلد العمل
 WORKDIR /app
 
-# Copy the requirements file
+# نسخ ملف المتطلبات
 COPY requirements.txt .
 
-# Create a virtual environment and install dependencies
+# إنشاء بيئة افتراضية وتثبيت المتطلبات
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy the rest of the application code
+# نسخ باقي كود التطبيق
 COPY . .
 
-# Set the command to run the app with Gunicorn
+# تشغيل التطبيق باستخدام Gunicorn
 CMD gunicorn -b 0.0.0.0:$PORT app:app
