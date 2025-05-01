@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 logger.info("Loading I3D model at startup...")
 try:
     I3D_MODEL = load_i3d_ucf_finetuned()
-    logger.info("I3D model loaded successfully.")
+    logger.info("I3D model loaded successfully from /app/weights/I3D_8x8_R50.pyth")
 except Exception as e:
     logger.error(f"Failed to load I3D model at startup: {str(e)}")
     I3D_MODEL = None

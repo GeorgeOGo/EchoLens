@@ -9,7 +9,6 @@ import re
 from collections import Counter
 import torch
 import torch.nn as nn
-from huggingface_hub import hf_hub_download
 from ultralytics import YOLO
 
 def preprocess_video(input_path, output_path, target_size=(224, 224)):
@@ -202,21 +201,23 @@ def extract_keyframes_and_events(video_path="output_video_preprocessing.mp4",
 
     return events
 
-def load_i3d_ucf_finetuned(repo_id="Ahmeddawood0001/i3d_ucf_finetuned", filename="i3d_ucf_finetuned.pth"):
-    class I3DClassifier(nn.Module):
-        def __init__(self, num_classes):
-            super(I3DClassifier, self).__init__()
-            self.i3d = torch.hub.load('facebookresearch/pytorchvideo', 'i3d_r50', pretrained=True)
-            self.dropout = nn.Dropout(0.3)
-            self.i3d.blocks[6].proj = nn.Linear(2048, num_classes)
-        def forward(self, x):
-            x = self.i3d(x)
-            x = self.dropout(x)
-            return x
+def load_i3d_ucf_finetuned():
+    import gdown
+    import os
+
+    # رابط Google Drive بتاع الموديل (بصيغة يقدر gdown يحمل منها)
+    file_id = "1KMSHa8JZ8GSa3cEu9TVzIxAD0jkcWqxY"
+    url = f"https://drive.google.com/uc?id={file_id}"
+    model_path = "/app/weights/I3D_8x8_R50.pyth"
+
+    # التأكد إن الموديل موجود، لو مش موجود نحمله
+    if not os.path.exists(model_path):
+        os.makedirs("/app/weights", exist_ok=True)
+        gdown.download(url, model_path, quiet=False)
+
+    # تحميل الموديل من الملف المحلي
     device = torch.device("cpu")
-    model = I3DClassifier(num_classes=8).to(device)
-    weights_path = hf_hub_download(repo_id=repo_id, filename=filename)
-    model.load_state_dict(torch.load(weights_path, map_location=torch.device('cpu')))
+    model = torch.load(model_path, map_location=device)
     model.eval()
     return model
 
@@ -263,7 +264,7 @@ def generate_descriptions_and_summary(video_path="significant_keyframes_output.m
 
     # Check if the video file exists
     if not os.path.exists(video_path):
-        print(f"Error: Video file {video_path} does not exist.")
+        print(f"Error: Video file {video_path} not exist.")
         return [], {}, f"Video file {video_path} not found.", predicted_label, confidence
 
     # Create output directory for frames
