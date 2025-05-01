@@ -51,4 +51,4 @@ RUN echo "Starting Echolens app..." && \
     ls -lh /app/weights || echo "Directory /app/weights is empty or does not exist"
 
 # Run the application with Gunicorn
-CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class gevent --log-level debug --timeout 120 app:app
+CMD ["gunicorn", "--worker-class", "gevent", "--bind", "0.0.0.0:8080", "--timeout", "120", "--log-level", "debug", "app:app"]
