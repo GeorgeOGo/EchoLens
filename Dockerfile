@@ -28,6 +28,7 @@ RUN pip install --upgrade pip && \
 # Verify torchvision installation
 RUN python -c "import torchvision; print(f'torchvision version: {torchvision.__version__}'); from torchvision.ops import nms; print('NMS available:', bool(nms))"
 
+
 # Copy the rest of the application code
 COPY . .
 

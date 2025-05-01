@@ -891,6 +891,7 @@ def download_report(source):
         session.pop(results_key, None)
         session.pop(significant_keyframes_key, None)
 
+
 @main_bp.route('/test')
 def test():
     logger.info("Received a request on /test endpoint")
