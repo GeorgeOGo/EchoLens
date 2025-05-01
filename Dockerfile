@@ -1,4 +1,4 @@
-# استخدام صورة Python 3.11 خفيفة كأساس بدل 3.12
+# استخدام صورة Python 3.11 خفيفة كأساس
 FROM python:3.11-slim
 
 # تثبيت حزم النظام اللي OpenCV محتاجها
@@ -28,6 +28,5 @@ COPY . .
 RUN echo "Starting Echolens app..." && \
     echo "Checking if Flask app is accessible..."
 
-# تشغيل التطبيق باستخدام Gunicorn مع eventlet worker
-#CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class eventlet --log-level debug app:app
-CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class gevent --log-level debug app:app
+# تشغيل التطبيق باستخدام Gunicorn مع gevent worker وزيادة الـ timeout
+CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class gevent --log-level debug --timeout 120 app:app

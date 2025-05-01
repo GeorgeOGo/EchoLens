@@ -21,8 +21,6 @@ import datetime
 import os
 from ultralytics import settings
 
-import eventlet
-#eventlet.monkey_patch()
 import gevent
 from gevent import monkey
 monkey.patch_all()
@@ -33,9 +31,9 @@ os.makedirs(settings_dir, exist_ok=True)
 
 # ضبط مسار الإعدادات بتاعة Ultralytics
 settings.update({
-    "settings_dir": settings_dir,  # مسار ملف الإعدادات
-    "runs_dir": "/app/runs",       # مسار حفظ النتايج (زي الصور أو الفيديوهات المعالجة)
-    "weights_dir": "/app/weights", # مسار تحميل وتخزين الموديلات
+    "settings_dir": settings_dir,
+    "runs_dir": "/app/runs",
+    "weights_dir": "/app/weights",
 })
 
 # التأكد إن المسارات موجودة
@@ -105,8 +103,6 @@ def get_video_duration(video_path):
     duration = frame_count / fps if fps > 0 else 0
     cap.release()
     return duration
-
-
 
 def extract_keyframe_image(video_path, output_image_path, frame_number=0):
     """
@@ -344,6 +340,13 @@ def upload_video():
         frames_dir = os.path.join(app.config['OUTPUT_FOLDER'], "frames")
 
         try:
+            # Check available memory before processing
+            import psutil
+            available_memory = psutil.virtual_memory().available / (1024 * 1024)  # Memory in MB
+            if available_memory < 100:  # Less than 100 MB available
+                logger.error("upload_video: Insufficient memory to process video (available: %.2f MB)", available_memory)
+                return jsonify({'error': 'الذاكرة غير كافية لمعالجة الفيديو، من فضلك حاول تاني لاحقًا' if lang == 'ar' else 'Insufficient memory to process video, please try again later'}), 503
+
             logger.info("upload_video: Preprocessing video: %s", video_path)
             preprocess_video(video_path, output_video_preprocessed)
 
@@ -370,8 +373,10 @@ def upload_video():
 
             logger.info("upload_video: Classifying video...")
             labels = ["arrest", "Explosion", "Fight", "normal", "roadaccidents", "shooting", "Stealing", "vandalism"]
-            model = load_i3d_ucf_finetuned()
-            predicted_label, confidence = classify_video(output_video_significant, model, labels)
+            if I3D_MODEL is None:
+                logger.error("upload_video: I3D model not loaded, cannot classify video")
+                return jsonify({'error': 'فشل في تحميل الموديل، من فضلك حاول تاني لاحقًا' if lang == 'ar' else 'Failed to load model, please try again later'}), 500
+            predicted_label, confidence = classify_video(output_video_significant, I3D_MODEL, labels)
             logger.info("upload_video: Initial classification - Label: %s, Confidence: %.2f", predicted_label, confidence)
 
             logger.info("upload_video: Generating descriptions and summary...")
@@ -497,7 +502,7 @@ def live():
                     logger.error("live: No video selected for analysis")
                     return jsonify({'error': 'No video selected'}), 400
                 
-                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')  # Fixed datetime.now()
+                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 video_path = os.path.join(app.config['UPLOAD_FOLDER'], f"live_analysis_{timestamp}.webm")
                 video_file.save(video_path)
                 logger.info("live: Video file saved at: %s", video_path)
@@ -535,6 +540,13 @@ def live():
                 output_video_annotated = os.path.join(app.config['OUTPUT_FOLDER'], "live_keyframes_annotated.mp4")
                 output_video_significant = os.path.join(app.config['OUTPUT_FOLDER'], "live_significant_keyframes.mp4")
                 frames_dir = os.path.join(app.config['OUTPUT_FOLDER'], "live_frames")
+
+                # Check available memory before processing
+                import psutil
+                available_memory = psutil.virtual_memory().available / (1024 * 1024)  # Memory in MB
+                if available_memory < 100:  # Less than 100 MB available
+                    logger.error("live: Insufficient memory to process video (available: %.2f MB)", available_memory)
+                    return jsonify({'error': 'Insufficient memory to process video, please try again later'}), 503
                 
                 preprocess_video(video_path, output_video_preprocessed)
                 logger.info("live: Video preprocessing completed: %s", output_video_preprocessed)
@@ -557,8 +569,10 @@ def live():
                     }), 200
                 
                 labels = ["arrest", "Explosion", "Fight", "normal", "roadaccidents", "shooting", "Stealing", "vandalism"]
-                model = load_i3d_ucf_finetuned()
-                predicted_label, confidence = classify_video(output_video_significant, model, labels)
+                if I3D_MODEL is None:
+                    logger.error("live: I3D model not loaded, cannot classify video")
+                    return jsonify({'error': 'Failed to load model, please try again later'}), 500
+                predicted_label, confidence = classify_video(output_video_significant, I3D_MODEL, labels)
                 logger.info("live: Classification completed - Label: %s, Confidence: %.2f", predicted_label, confidence)
                 
                 frame_paths, descriptions, summary, corrected_label, corrected_confidence = generate_descriptions_and_summary(
@@ -613,7 +627,7 @@ def live():
                     logger.error("live: Failed to open RTSP stream: %s", rtsp_url)
                     return jsonify({"error": "Failed to open RTSP stream"}), 400
 
-                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')  # Fixed datetime.now()
+                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 temp_video_path = os.path.join(app.config['UPLOAD_FOLDER'], f"rtsp_stream_{timestamp}.mp4")
                 fps = cap.get(cv2.CAP_PROP_FPS) or 30
                 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -654,6 +668,13 @@ def live():
                 output_video_significant = os.path.join(app.config['OUTPUT_FOLDER'], "rtsp_significant_keyframes.mp4")
                 frames_dir = os.path.join(app.config['OUTPUT_FOLDER'], "rtsp_frames")
 
+                # Check available memory before processing
+                import psutil
+                available_memory = psutil.virtual_memory().available / (1024 * 1024)  # Memory in MB
+                if available_memory < 100:  # Less than 100 MB available
+                    logger.error("live: Insufficient memory to process RTSP stream (available: %.2f MB)", available_memory)
+                    return jsonify({'error': 'Insufficient memory to process RTSP stream, please try again later'}), 503
+
                 preprocess_video(temp_video_path, output_video_preprocessed)
                 logger.info("live: RTSP video preprocessing completed: %s", output_video_preprocessed)
 
@@ -675,8 +696,10 @@ def live():
                     }), 200
 
                 labels = ["arrest", "Explosion", "Fight", "normal", "roadaccidents", "shooting", "Stealing", "vandalism"]
-                model = load_i3d_ucf_finetuned()
-                predicted_label, confidence = classify_video(output_video_significant, model, labels)
+                if I3D_MODEL is None:
+                    logger.error("live: I3D model not loaded for RTSP stream, cannot classify video")
+                    return jsonify({'error': 'Failed to load model, please try again later'}), 500
+                predicted_label, confidence = classify_video(output_video_significant, I3D_MODEL, labels)
                 logger.info("live: RTSP Classification - Label: %s, Confidence: %.2f", predicted_label, confidence)
 
                 frame_paths, descriptions, summary, corrected_label, corrected_confidence = generate_descriptions_and_summary(
@@ -853,6 +876,7 @@ def download_report(source):
 def test():
     logger.info("Received a request on /test endpoint")
     return "Echolens Test: Server is running!"
+
 # Register blueprint
 app.register_blueprint(main_bp)
 
@@ -861,9 +885,6 @@ app.register_blueprint(main_bp)
 def cleanup(exception=None):
     cv2.destroyAllWindows()
     logger.info("cleanup: Application context torn down, resources released.")
-
-#if __name__ == "__main__":
-   # socketio.run(app, debug=True, host="0.0.0.0", port=5000)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Use PORT from environment, default to 5000 for local dev
