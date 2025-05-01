@@ -24,5 +24,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # نسخ باقي كود التطبيق
 COPY . .
 
-# تشغيل التطبيق باستخدام Gunicorn
-CMD gunicorn -b 0.0.0.0:$PORT app:app
+# طباعة بيانات Debug قبل التشغيل
+RUN echo "Starting Echolens app..." && \
+    echo "Checking if Flask app is accessible..."
+
+# تشغيل التطبيق باستخدام Gunicorn مع eventlet worker
+CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class eventlet --log-level debug app:app

@@ -21,6 +21,9 @@ import datetime
 import os
 from ultralytics import settings
 
+import eventlet
+eventlet.monkey_patch()
+
 # تحديد مسار ثابت داخل المشروع لحفظ إعدادات Ultralytics
 settings_dir = "/app/ultralytics_settings"
 os.makedirs(settings_dir, exist_ok=True)
@@ -834,7 +837,10 @@ def download_report(source):
         session.pop(results_key, None)
         session.pop(significant_keyframes_key, None)
 
-
+@main_bp.route('/test')
+def test():
+    logger.info("Received a request on /test endpoint")
+    return "Echolens Test: Server is running!"
 # Register blueprint
 app.register_blueprint(main_bp)
 
