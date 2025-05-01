@@ -51,5 +51,29 @@ RUN echo "Starting Echolens app..." && \
     ls -lh /app/weights || echo "Directory /app/weights is empty or does not exist"
 
 # Run the application with Gunicorn
-#CMD ["gunicorn", "--worker-class", "gevent", "--bind", "0.0.0.0:8080", "--timeout", "120", "--log-level", "debug", "app:app"]
-CMD ["gunicorn", "--worker-class", "gevent", "--bind", "0.0.0.0:8080", "wsgi:app"]
+#CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class gevent --log-level debug --timeout 120 app:app
+CMD ["gunicorn", "--worker-class", "gevent", "--bind", "0.0.0.0:8080", "app:app"]
+
+# Use Python slim base image
+FROM python:3.10-slim
+
+# Set work directory
+WORKDIR /app
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx ffmpeg git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install them
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copy the rest of the app
+COPY . .
+
+# Expose Railway default port
+EXPOSE 8080
+
+# Run the app using Flask-SocketIO (not gunicorn directly)
+CMD ["python", "wsgi.py"]
