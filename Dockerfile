@@ -23,11 +23,10 @@ COPY requirements.txt .
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt --retry 5
+    pip install --no-cache-dir -r requirements.txt --retries 5
 
 # Verify torchvision installation
 RUN python -c "import torchvision; print(f'torchvision version: {torchvision.__version__}'); from torchvision.ops import nms; print('NMS available:', bool(nms))"
-
 
 # Copy the rest of the application code
 COPY . .
