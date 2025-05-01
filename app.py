@@ -25,57 +25,71 @@ import gevent
 from gevent import monkey
 monkey.patch_all()
 
-# تحديد مسار ثابت داخل المشروع لحفظ إعدادات Ultralytics
-settings_dir = "/app/ultralytics_settings"
-os.makedirs(settings_dir, exist_ok=True)
-
-# ضبط مسار الإعدادات بتاعة Ultralytics
-settings.update({
-    "settings_dir": settings_dir,
-    "runs_dir": "/app/runs",
-    "weights_dir": "/app/weights",
-})
-
-# التأكد إن المسارات موجودة
-os.makedirs("/app/runs", exist_ok=True)
-os.makedirs("/app/weights", exist_ok=True)
-
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Log library versions at startup
-import torch
-import torchvision
-import pytorchvideo
-logger.info(f"PyTorch version: {torch.__version__}")
-logger.info(f"Torchvision version: {torchvision.__version__}")
-logger.info(f"Pytorchvideo version: {pytorchvideo.__version__}")
+# Debug: Log the start of app.py initialization
+logger.info("Starting app.py initialization...")
 
-# Test if torchvision.ops.nms is available
-logger.info("Testing if torchvision.ops.nms is available...")
 try:
-    boxes = torch.tensor([[0, 0, 1, 1], [0.1, 0.1, 1.1, 1.1]], dtype=torch.float32)
-    scores = torch.tensor([0.9, 0.8], dtype=torch.float32)
-    torchvision.ops.nms(boxes, scores, iou_threshold=0.5)
-    logger.info("torchvision.ops.nms test passed successfully.")
+    # تحديد مسار ثابت داخل المشروع لحفظ إعدادات Ultralytics
+    settings_dir = "/app/ultralytics_settings"
+    os.makedirs(settings_dir, exist_ok=True)
+
+    # ضبط مسار الإعدادات بتاعة Ultralytics
+    settings.update({
+        "settings_dir": settings_dir,
+        "runs_dir": "/app/runs",
+        "weights_dir": "/app/weights",
+    })
+
+    # التأكد إن المسارات موجودة
+    os.makedirs("/app/runs", exist_ok=True)
+    os.makedirs("/app/weights", exist_ok=True)
+
+    # Log library versions at startup
+    import torch
+    import torchvision
+    import pytorchvideo
+    logger.info(f"PyTorch version: {torch.__version__}")
+    logger.info(f"Torchvision version: {torchvision.__version__}")
+    logger.info(f"Pytorchvideo version: {pytorchvideo.__version__}")
+
+    # Test if torchvision.ops.nms is available
+    logger.info("Testing if torchvision.ops.nms is available...")
+    try:
+        boxes = torch.tensor([[0, 0, 1, 1], [0.1, 0.1, 1.1, 1.1]], dtype=torch.float32)
+        scores = torch.tensor([0.9, 0.8], dtype=torch.float32)
+        torchvision.ops.nms(boxes, scores, iou_threshold=0.5)
+        logger.info("torchvision.ops.nms test passed successfully.")
+    except Exception as e:
+        logger.error(f"torchvision.ops.nms test failed: {str(e)}")
+        raise
+
+    # Defer I3D model loading until the first request that needs it
+    I3D_MODEL = None
+    def load_i3d_model():
+        global I3D_MODEL
+        if I3D_MODEL is None:
+            logger.info("Loading I3D model on demand...")
+            try:
+                I3D_MODEL = load_i3d_ucf_finetuned()
+                logger.info("I3D model loaded successfully from /app/weights/I3D_8x8_R50.pyth")
+            except Exception as e:
+                logger.error(f"Failed to load I3D model: {str(e)}")
+                I3D_MODEL = None
+                raise
+    
+    # Load environment variables
+    load_dotenv()
+
+    app = Flask(__name__)
+    logger.info("Flask app initialized successfully.")
 except Exception as e:
-    logger.error(f"torchvision.ops.nms test failed: {str(e)}")
+    logger.error(f"Error during app.py initialization: {str(e)}", exc_info=True)
     raise
 
-# تحميل الموديلات مرة واحدة عند بدء التطبيق
-logger.info("Loading I3D model at startup...")
-try:
-    I3D_MODEL = load_i3d_ucf_finetuned()
-    logger.info("I3D model loaded successfully from /app/weights/I3D_8x8_R50.pyth")
-except Exception as e:
-    logger.error(f"Failed to load I3D model at startup: {str(e)}")
-    I3D_MODEL = None
-    
-# Load environment variables
-load_dotenv()
-
-app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("FLASK_SECRET_KEY", "supersecretkey")
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['OUTPUT_FOLDER'] = 'outputs'
@@ -392,6 +406,8 @@ def upload_video():
 
             logger.info("upload_video: Classifying video...")
             labels = ["arrest", "Explosion", "Fight", "normal", "roadaccidents", "shooting", "Stealing", "vandalism"]
+            # Load I3D model if not already loaded
+            load_i3d_model()
             if I3D_MODEL is None:
                 logger.error("upload_video: I3D model not loaded, cannot classify video")
                 return jsonify({'error': 'فشل في تحميل الموديل، من فضلك حاول تاني لاحقًا' if lang == 'ar' else 'Failed to load model, please try again later'}), 500
@@ -526,7 +542,7 @@ def live():
                 video_file.save(video_path)
                 logger.info("live: Video file saved at: %s", video_path)
 
-                # Get video duration
+                # Get Vishnu duration
                 video_duration = get_video_duration(video_path)
                 if video_duration is None:
                     logger.error(f"live: Could not calculate duration for video: {video_path}")
@@ -588,6 +604,8 @@ def live():
                     }), 200
                 
                 labels = ["arrest", "Explosion", "Fight", "normal", "roadaccidents", "shooting", "Stealing", "vandalism"]
+                # Load I3D model if not already loaded
+                load_i3d_model()
                 if I3D_MODEL is None:
                     logger.error("live: I3D model not loaded, cannot classify video")
                     return jsonify({'error': 'Failed to load model, please try again later'}), 500
@@ -715,6 +733,8 @@ def live():
                     }), 200
 
                 labels = ["arrest", "Explosion", "Fight", "normal", "roadaccidents", "shooting", "Stealing", "vandalism"]
+                # Load I3D model if not already loaded
+                load_i3d_model()
                 if I3D_MODEL is None:
                     logger.error("live: I3D model not loaded for RTSP stream, cannot classify video")
                     return jsonify({'error': 'Failed to load model, please try again later'}), 500
@@ -890,7 +910,6 @@ def download_report(source):
         # Clear session variables
         session.pop(results_key, None)
         session.pop(significant_keyframes_key, None)
-
 
 @main_bp.route('/test')
 def test():
