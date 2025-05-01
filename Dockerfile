@@ -25,7 +25,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip
 
 # Install pytorchvideo separately to catch errors
-RUN pip install pytorchvideo==1.0.0 --no-cache-dir --retries 5 || { echo "Failed to install pytorchvideo"; exit 1; }
+RUN pip install pytorchvideo==0.1.5 --no-cache-dir --retries 5 || { echo "Failed to install pytorchvideo"; exit 1; }
 
 # Install remaining dependencies
 RUN pip install --no-cache-dir -r requirements.txt --retries 5
