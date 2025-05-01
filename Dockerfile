@@ -1,5 +1,5 @@
-# استخدام صورة Python 3.12 خفيفة كأساس
-FROM python:3.12-slim
+# استخدام صورة Python 3.11 خفيفة كأساس بدل 3.12
+FROM python:3.11-slim
 
 # تثبيت حزم النظام اللي OpenCV محتاجها
 RUN apt-get update && apt-get install -y \
