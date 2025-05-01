@@ -31,6 +31,12 @@ RUN python -c "import torchvision; print(f'torchvision version: {torchvision.__v
 # Copy the rest of the application code
 COPY . .
 
+# Debug script to test app.py import
+RUN echo "import logging; logging.basicConfig(level=logging.INFO); logger = logging.getLogger(__name__); logger.info('Attempting to import app.py...'); import app; logger.info('Successfully imported app.py'); logger.info('Flask app: %s', app.app)" > debug_app.py
+
+# Run the debug script before starting Gunicorn
+RUN python debug_app.py
+
 # Debug information before running
 RUN echo "Starting Echolens app..." && \
     echo "Listing contents of /app/weights directory:" && \

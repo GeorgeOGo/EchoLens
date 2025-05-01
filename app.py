@@ -33,7 +33,13 @@ logger = logging.getLogger(__name__)
 logger.info("Starting app.py initialization...")
 
 try:
+    # Log each major import block
+    logger.info("Importing os, cv2, numpy...")
+    logger.info("Importing Flask and related modules...")
+    logger.info("Importing utils and other dependencies...")
+
     # تحديد مسار ثابت داخل المشروع لحفظ إعدادات Ultralytics
+    logger.info("Setting up Ultralytics directories...")
     settings_dir = "/app/ultralytics_settings"
     os.makedirs(settings_dir, exist_ok=True)
 
@@ -47,8 +53,10 @@ try:
     # التأكد إن المسارات موجودة
     os.makedirs("/app/runs", exist_ok=True)
     os.makedirs("/app/weights", exist_ok=True)
+    logger.info("Ultralytics directories set up successfully.")
 
     # Log library versions at startup
+    logger.info("Importing torch, torchvision, pytorchvideo...")
     import torch
     import torchvision
     import pytorchvideo
@@ -82,8 +90,12 @@ try:
                 raise
     
     # Load environment variables
+    logger.info("Loading environment variables...")
     load_dotenv()
+    logger.info("Environment variables loaded.")
 
+    # Initialize Flask app
+    logger.info("Initializing Flask app...")
     app = Flask(__name__)
     logger.info("Flask app initialized successfully.")
 except Exception as e:
