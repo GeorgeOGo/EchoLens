@@ -10,6 +10,11 @@ from collections import Counter
 import torch
 import torch.nn as nn
 from ultralytics import YOLO
+import logging
+
+# إعداد السجلات
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def preprocess_video(input_path, output_path, target_size=(224, 224)):
     cap = cv2.VideoCapture(input_path)
@@ -218,29 +223,47 @@ def load_i3d_ucf_finetuned():
             x = self.dropout(x)
             return x
 
-    # رابط Google Drive بتاع الموديل (بصيغة يقدر gdown يحمل منها)
+    # رابط Google Drive بتاع الموديل
     file_id = "1KMSHa8JZ8GSa3cEu9TVzIxAD0jkcWqxY"
     url = f"https://drive.google.com/uc?id={file_id}"
     model_path = "/app/weights/I3D_8x8_R50.pyth"
 
     # التأكد إن الموديل موجود، لو مش موجود نحمله
     if not os.path.exists(model_path):
-        os.makedirs("/app/weights", exist_ok=True)
-        gdown.download(url, model_path, quiet=False)
+        try:
+            os.makedirs("/app/weights", exist_ok=True)
+            logger.info("Downloading I3D model from Google Drive...")
+            gdown.download(url, model_path, quiet=False)
+            logger.info("Download completed successfully.")
+        except Exception as e:
+            logger.error(f"Failed to download I3D model from Google Drive: {str(e)}")
+            raise
 
     # إنشاء الموديل
     device = torch.device("cpu")
-    model = I3DClassifier(num_classes=8).to(device)
+    try:
+        logger.info("Creating I3DClassifier model...")
+        model = I3DClassifier(num_classes=8).to(device)
+    except Exception as e:
+        logger.error(f"Failed to create I3DClassifier model: {str(e)}")
+        raise
 
     # تحميل الأوزان من الملف المحلي وإضافتها للموديل
-    state_dict = torch.load(model_path, map_location=device)
-    model.load_state_dict(state_dict)
+    try:
+        logger.info("Loading weights from model file...")
+        state_dict = torch.load(model_path, map_location=device)
+        model.load_state_dict(state_dict)
+        logger.info("Weights loaded successfully.")
+    except Exception as e:
+        logger.error(f"Failed to load weights: {str(e)}")
+        raise
     
     # تجهيز الموديل للتقييم
     model.eval()
+    logger.info("I3D model loaded successfully from /app/weights/I3D_8x8_R50.pyth")
     return model
 
-def extract_frames(video_path, max_frames=32, frame_size=(224, 224)):
+def extract_frames(video_path, max_frames=16, frame_size=(224, 224)):
     cap = cv2.VideoCapture(video_path)
     frames = []
     while len(frames) < max_frames:
@@ -273,7 +296,7 @@ def classify_video(video_path, model, labels):
         # Ensure confidence is between 0 and 1
         confidence = max(0.0, min(1.0, confidence))
         print(f"Clamped confidence: {confidence}")
-    return predicted_label, confidence  # Fixed return statement to include both values
+    return predicted_label, confidence
 
 def generate_descriptions_and_summary(video_path="significant_keyframes_output.mp4", output_dir="frames", predicted_label=None, confidence=None):
     # Configure the generative AI model
