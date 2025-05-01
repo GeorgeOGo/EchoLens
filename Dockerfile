@@ -29,4 +29,5 @@ RUN echo "Starting Echolens app..." && \
     echo "Checking if Flask app is accessible..."
 
 # تشغيل التطبيق باستخدام Gunicorn مع eventlet worker
-CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class eventlet --log-level debug app:app
+#CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class eventlet --log-level debug app:app
+CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class gevent --log-level debug app:app

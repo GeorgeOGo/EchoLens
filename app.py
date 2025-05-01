@@ -22,7 +22,10 @@ import os
 from ultralytics import settings
 
 import eventlet
-eventlet.monkey_patch()
+#eventlet.monkey_patch()
+import gevent
+from gevent import monkey
+monkey.patch_all()
 
 # تحديد مسار ثابت داخل المشروع لحفظ إعدادات Ultralytics
 settings_dir = "/app/ultralytics_settings"
