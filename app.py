@@ -936,6 +936,10 @@ app.register_blueprint(main_bp)
 def cleanup(exception=None):
     cv2.destroyAllWindows()
     logger.info("cleanup: Application context torn down, resources released.")
+    
+@app.route("/healthz")
+def health_check():
+    return "OK", 200
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Use PORT from environment, default to 5000 for local dev
