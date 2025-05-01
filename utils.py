@@ -205,6 +205,19 @@ def load_i3d_ucf_finetuned():
     import gdown
     import os
 
+    # تعريف بنية الموديل
+    class I3DClassifier(nn.Module):
+        def __init__(self, num_classes):
+            super(I3DClassifier, self).__init__()
+            self.i3d = torch.hub.load('facebookresearch/pytorchvideo', 'i3d_r50', pretrained=False)
+            self.dropout = nn.Dropout(0.3)
+            self.i3d.blocks[6].proj = nn.Linear(2048, num_classes)
+        
+        def forward(self, x):
+            x = self.i3d(x)
+            x = self.dropout(x)
+            return x
+
     # رابط Google Drive بتاع الموديل (بصيغة يقدر gdown يحمل منها)
     file_id = "1KMSHa8JZ8GSa3cEu9TVzIxAD0jkcWqxY"
     url = f"https://drive.google.com/uc?id={file_id}"
@@ -215,9 +228,15 @@ def load_i3d_ucf_finetuned():
         os.makedirs("/app/weights", exist_ok=True)
         gdown.download(url, model_path, quiet=False)
 
-    # تحميل الموديل من الملف المحلي
+    # إنشاء الموديل
     device = torch.device("cpu")
-    model = torch.load(model_path, map_location=device)
+    model = I3DClassifier(num_classes=8).to(device)
+
+    # تحميل الأوزان من الملف المحلي وإضافتها للموديل
+    state_dict = torch.load(model_path, map_location=device)
+    model.load_state_dict(state_dict)
+    
+    # تجهيز الموديل للتقييم
     model.eval()
     return model
 
