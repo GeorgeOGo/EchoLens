@@ -46,6 +46,15 @@ os.makedirs("/app/weights", exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# تحميل الموديلات مرة واحدة عند بدء التطبيق
+logger.info("Loading I3D model at startup...")
+try:
+    I3D_MODEL = load_i3d_ucf_finetuned()
+    logger.info("I3D model loaded successfully.")
+except Exception as e:
+    logger.error(f"Failed to load I3D model at startup: {str(e)}")
+    I3D_MODEL = None
+    
 # Load environment variables
 load_dotenv()
 
