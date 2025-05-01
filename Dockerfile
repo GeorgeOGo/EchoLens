@@ -25,6 +25,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt --retries 5
 
+# Debug: Confirm pytorchvideo installation
+RUN pip list | grep pytorchvideo || echo "pytorchvideo not installed"
+
 # Verify torchvision installation
 RUN python -c "import torchvision; print(f'torchvision version: {torchvision.__version__}'); from torchvision.ops import nms; print('NMS available:', bool(nms))"
 
