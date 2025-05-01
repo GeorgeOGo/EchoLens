@@ -1,37 +1,40 @@
-# استخدام صورة Python 3.11 خفيفة كأساس
 FROM python:3.11-slim
 
-# تثبيت حزم النظام اللي OpenCV محتاجها
+# Install system dependencies for OpenCV and torchvision
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    libpng-dev \
+    libjpeg-dev \
+    libopenjp2-7-dev \
+    libtiff-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# تحديد مجلد العمل
+# Set working directory
 WORKDIR /app
 
-# إنشاء المسارات بتاعة Ultralytics
+# Create directories for Ultralytics
 RUN mkdir -p /app/ultralytics_settings /app/runs /app/weights
 
-# نسخ ملف المتطلبات
+# Copy requirements file
 COPY requirements.txt .
 
-# إنشاء بيئة افتراضية وتثبيت المتطلبات مع خيارات لإعادة المحاولة وتقليل الحمل
+# Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-# تثبيت PyTorch (CPU-only) من المصدر الرسمي
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir torch==2.3.0 --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt --resume-retries 5
+    pip install --no-cache-dir -r requirements.txt --retry 5
 
-# نسخ باقي كود التطبيق
+# Verify torchvision installation
+RUN python -c "import torchvision; print(f'torchvision version: {torchvision.__version__}'); from torchvision.ops import nms; print('NMS available:', bool(nms))"
+
+# Copy the rest of the application code
 COPY . .
 
-# طباعة بيانات Debug قبل التشغيل
+# Debug information before running
 RUN echo "Starting Echolens app..." && \
-    echo "Checking if Flask app is accessible..." && \
     echo "Listing contents of /app/weights directory:" && \
     ls -lh /app/weights || echo "Directory /app/weights is empty or does not exist"
 
-# تشغيل التطبيق باستخدام Gunicorn مع gevent worker وزيادة الـ timeout
+# Run the application with Gunicorn
 CMD gunicorn -b 0.0.0.0:$PORT -w 1 --worker-class gevent --log-level debug --timeout 120 app:app

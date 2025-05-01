@@ -44,6 +44,25 @@ os.makedirs("/app/weights", exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Log library versions at startup
+import torch
+import torchvision
+import pytorchvideo
+logger.info(f"PyTorch version: {torch.__version__}")
+logger.info(f"Torchvision version: {torchvision.__version__}")
+logger.info(f"Pytorchvideo version: {pytorchvideo.__version__}")
+
+# Test if torchvision.ops.nms is available
+logger.info("Testing if torchvision.ops.nms is available...")
+try:
+    boxes = torch.tensor([[0, 0, 1, 1], [0.1, 0.1, 1.1, 1.1]], dtype=torch.float32)
+    scores = torch.tensor([0.9, 0.8], dtype=torch.float32)
+    torchvision.ops.nms(boxes, scores, iou_threshold=0.5)
+    logger.info("torchvision.ops.nms test passed successfully.")
+except Exception as e:
+    logger.error(f"torchvision.ops.nms test failed: {str(e)}")
+    raise
+
 # تحميل الموديلات مرة واحدة عند بدء التطبيق
 logger.info("Loading I3D model at startup...")
 try:

@@ -263,7 +263,7 @@ def load_i3d_ucf_finetuned():
     logger.info("I3D model loaded successfully from /app/weights/I3D_8x8_R50.pyth")
     return model
 
-def extract_frames(video_path, max_frames=16, frame_size=(224, 224)):
+def extract_frames(video_path, max_frames=8, frame_size=(224, 224)):
     cap = cv2.VideoCapture(video_path)
     frames = []
     while len(frames) < max_frames:
