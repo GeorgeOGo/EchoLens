@@ -19,7 +19,9 @@ COPY requirements.txt .
 # إنشاء بيئة افتراضية وتثبيت المتطلبات مع خيارات لإعادة المحاولة وتقليل الحمل
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+# تثبيت PyTorch (CPU-only) من المصدر الرسمي
 RUN pip install --upgrade pip && \
+    pip install --no-cache-dir torch==2.3.0 --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt --resume-retries 5
 
 # نسخ باقي كود التطبيق
