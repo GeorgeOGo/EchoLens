@@ -1,3 +1,6 @@
+import gevent
+from gevent import monkey
+monkey.patch_all()
 import os
 import cv2
 import numpy as np
@@ -21,9 +24,6 @@ import datetime
 import os
 from ultralytics import settings
 
-import gevent
-from gevent import monkey
-monkey.patch_all()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

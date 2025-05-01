@@ -22,11 +22,16 @@ COPY requirements.txt .
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt --retries 5
+RUN pip install --upgrade pip
+
+# Install pytorchvideo separately to catch errors
+RUN pip install pytorchvideo==1.0.0 --no-cache-dir --retries 5 || { echo "Failed to install pytorchvideo"; exit 1; }
+
+# Install remaining dependencies
+RUN pip install --no-cache-dir -r requirements.txt --retries 5
 
 # Debug: Confirm pytorchvideo installation
-RUN pip list | grep pytorchvideo || echo "pytorchvideo not installed"
+RUN pip list | grep pytorchvideo || { echo "pytorchvideo not installed"; exit 1; }
 
 # Verify torchvision installation
 RUN python -c "import torchvision; print(f'torchvision version: {torchvision.__version__}'); from torchvision.ops import nms; print('NMS available:', bool(nms))"
